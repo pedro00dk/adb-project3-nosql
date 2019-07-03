@@ -10,7 +10,8 @@
     },
     "devDependencies": {},
     "scripts": {
-        "mongo": "rm -rf ./data/ && mkdir ./data/ && mongod --dbpath \"$(pwd)/data/\"",
+        "mongo-fresh": "rm -rf ./data/ && mkdir ./data/ && mongod --dbpath \"$(pwd)/data/\"",
+        "mongo": "mongod --dbpath \"$(pwd)/data/\"",
         "fetch-people": "node ./src/population/people.js",
         "populate": "mongo ./src/population/population.js"
     }
