@@ -36,6 +36,12 @@ function randomSample(samples) {
     return samples[Math.round(Math.random() * (samples.length - 1))]
 }
 
+function gaussianRandomSample(samples, mean, std) {
+    mean = mean == undefined ? samples.length / 2 : mean
+    std = std == undefined ? samples.length / 4 : std
+    return samples[Math.max(0, Math.min(samples.length - 1, Math.round(gaussianGenerator(mean, std))))]
+}
+
 const randomCnhs = [...new Array(10000)].map(() => Math.floor(10000000000 + Math.random() * 90000000000))
 function randomCnh() {
     return randomCnhs.pop()
@@ -74,7 +80,10 @@ rawDrivers.forEach(
             phone: rawDriver.phone,
             cnh: {
                 number: randomCnh(),
-                expire: randomDateGenerator(new Date(new Date().getFullYear() + 1, 1), new Date(new Date().getFullYear() + 5, 12)),
+                expire: randomDateGenerator(
+                    new Date(new Date().getFullYear() + 1, 1),
+                    new Date(new Date().getFullYear() + 5, 12)
+                ),
                 type: randomSample(['ab', 'b', 'c', 'd'])
             }
         })
@@ -91,7 +100,7 @@ const rawPassengers = rawPeople.slice(Math.floor(rawPeople.length * driverRatio)
 const passengers = {}
 rawPassengers.forEach(
     rawPassenger =>
-        (drivers[rawPassenger.login.uuid] = {
+        (passengers[rawPassenger.login.uuid] = {
             uuid: rawPassenger.login.uuid,
             name: `${rawPassenger.name.first} ${rawPassenger.name.last}`,
             email: rawPassenger.email,
@@ -114,11 +123,11 @@ const trips = []
 const tripCount = 100000
 for (let i = 0; i < tripCount; i++) {
     log(`generating trip ${i}`)
-    const state = randomSample(states)
-    const pickupCity = randomSample(cities)
-    const destinationCity = randomSample(cities)
-    const pickupStreet = randomSample(streets)
-    const destinationStreet = randomSample(streets)
+    const state = gaussianRandomSample(states)
+    const pickupCity = gaussianRandomSample(cities)
+    const destinationCity = gaussianRandomSample(cities)
+    const pickupStreet = gaussianRandomSample(streets)
+    const destinationStreet = gaussianRandomSample(streets)
 
     const pickupAddress = { state, city: pickupCity, street: pickupStreet }
     const destinationAddress = { state, city: destinationCity, street: destinationStreet }
@@ -127,8 +136,8 @@ for (let i = 0; i < tripCount; i++) {
     const finalValue = Math.min(6, estimatedValue * (Math.random() * 0.4 + 0.8))
     const date = randomDateGenerator(new Date(2010, 1, 1))
 
-    const driver = randomSample(driversStateBuckets[state])
-    const passenger = randomSample(driversStateBuckets[state])
+    const driver = gaussianRandomSample(driversStateBuckets[state])
+    const passenger = gaussianRandomSample(passengersStateBuckets[state])
 
     const vehicle = driversVehicles[driver.uuid]
 
@@ -158,11 +167,10 @@ log('generation done')
 
 // MONGO ONLY
 if (isMongo) {
-
     // use carservice
     const carServiceDB = db.getSiblingDB('carservice')
     db = carServiceDB
-    
+
     db.createCollection('trips')
     db.trips.insert(trips)
     log('persistence done')
