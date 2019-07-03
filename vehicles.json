@@ -1,0 +1,134 @@
+[
+    {
+        "brand": "chev",
+        "model": "corsa"
+    },
+    {
+        "brand": "chev",
+        "model": "celta"
+    },
+    {
+        "brand": "chev",
+        "model": "onix"
+    },
+    {
+        "brand": "chev",
+        "model": "prisma"
+    },
+    {
+        "brand": "chev",
+        "model": "classic"
+    },
+    {
+        "brand": "chev",
+        "model": "vectra"
+    },
+    {
+        "brand": "chev",
+        "model": "cobalt"
+    },
+    {
+        "brand": "chev",
+        "model": "agile"
+    },
+    {
+        "brand": "fiat",
+        "model": "punto"
+    },
+    {
+        "brand": "fiat",
+        "model": "siena"
+    },
+    {
+        "brand": "fiat",
+        "model": "uno"
+    },
+    {
+        "brand": "fiat",
+        "model": "palio"
+    },
+    {
+        "brand": "fiat",
+        "model": "mobi"
+    },
+    {
+        "brand": "fiat",
+        "model": "idea"
+    },
+    {
+        "brand": "vw",
+        "model": "gol"
+    },
+    {
+        "brand": "vw",
+        "model": "fox"
+    },
+    {
+        "brand": "vw",
+        "model": "up"
+    },
+    {
+        "brand": "ford",
+        "model": "focus"
+    },
+    {
+        "brand": "ford",
+        "model": "ecosport"
+    },
+    {
+        "brand": "ford",
+        "model": "fiesta"
+    },
+    {
+        "brand": "ford",
+        "model": "ka"
+    },
+    {
+        "brand": "renault",
+        "model": "sandero"
+    },
+    {
+        "brand": "renault",
+        "model": "logan"
+    },
+    {
+        "brand": "renault",
+        "model": "clio"
+    },
+    {
+        "brand": "hyundai",
+        "model": "hb20"
+    },
+    {
+        "brand": "hyundai",
+        "model": "i30"
+    },
+    {
+        "brand": "toyota",
+        "model": "corolla"
+    },
+    {
+        "brand": "toyota",
+        "model": "etios"
+    },
+    {
+        "brand": "honda",
+        "model": "fit"
+    },
+    {
+        "brand": "honda",
+        "model": "civic"
+    },
+    {
+        "brand": "citroen",
+        "model": "c3"
+    },
+    {
+        "brand": "peugeot",
+        "model": "207"
+    },
+    {
+        "brand": "nissan",
+        "model": "march"
+    }
+]

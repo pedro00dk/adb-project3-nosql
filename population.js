@@ -1,3 +1,7 @@
+const log = typeof console === 'undefined' ? print : console.log
+const read = typeof require === 'undefined' ? cat : require('fs').readFileSync
+const isMongo = typeof require === 'undefined'
+
 function bucketGenerator(elements, properties, mapper) {
     const buckets = {}
 
@@ -25,15 +29,28 @@ function gaussianGenerator(mean = 0, std = 1) {
 }
 
 function randomDateGenerator(from, to = new Date()) {
-    return new Date((+from) + Math.random() * ((+to) - (+from)))
+    return new Date(+from + Math.random() * (+to - +from))
 }
 
 function randomSample(samples) {
     return samples[Math.round(Math.random() * (samples.length - 1))]
 }
 
-// const rawPeople = JSON.parse(require('fs').readFileSync('./people.json')).results
-const rawPeople = JSON.parse(cat('./people.json')).results
+const randomCnhs = [...new Array(10000)].map(() => Math.floor(10000000000 + Math.random() * 90000000000))
+function randomCnh() {
+    return randomCnhs.pop()
+}
+
+const rawVehicles = JSON.parse(read('./vehicles.json'))
+const colors = ['white', 'gray', 'black', 'silver', 'red', 'blue']
+function randomVehicle() {
+    return Object.assign({}, randomSample(rawVehicles), {
+        year: Math.min(Math.round(gaussianGenerator(2015, 2)), new Date().getFullYear()),
+        color: randomSample(colors)
+    })
+}
+
+const rawPeople = JSON.parse(read('./people.json')).results
 
 const states = [...new Set(rawPeople.map(p => p.location.state))]
 const cities = [...new Set(rawPeople.map(p => p.location.city))]
@@ -41,7 +58,6 @@ const streets = [...new Set(rawPeople.map(p => p.location.street))]
 
 const driverRatio = 0.05
 const rawDrivers = rawPeople.slice(0, Math.floor(rawPeople.length * driverRatio))
-rawDrivers.forEach(driver => (driver.type = 'driver'))
 const drivers = {}
 rawDrivers.forEach(
     rawDriver =>
@@ -49,7 +65,7 @@ rawDrivers.forEach(
             uuid: rawDriver.login.uuid,
             name: `${rawDriver.name.first} ${rawDriver.name.last}`,
             email: rawDriver.email,
-            pwd: rawDriver.password,
+            pwd: rawDriver.login.password,
             address: {
                 state: rawDriver.location.state,
                 city: rawDriver.location.city,
@@ -57,20 +73,47 @@ rawDrivers.forEach(
             },
             phone: rawDriver.phone,
             cnh: {
-                number: 123,
-                expire: randomDateGenerator(new Date(new Date().getFullYear() + 1, 1)),
+                number: randomCnh(),
+                expire: randomDateGenerator(new Date(new Date().getFullYear() + 1, 1), new Date(new Date().getFullYear() + 5, 12)),
                 type: randomSample(['ab', 'b', 'c', 'd'])
             }
         })
 )
-// const driversStateBuckets = bucketGenerator(Object.values(drivers), [d => d.address.state], d => d)
-const driversStateBuckets = bucketGenerator(Object.keys(drivers).map(uuid => drivers[uuid]), [d => d.address.state], d => d)
+const driversVehicles = {}
+rawDrivers.forEach(rawDriver => (driversVehicles[rawDriver.login.uuid] = randomVehicle()))
+const driversStateBuckets = bucketGenerator(
+    Object.keys(drivers).map(uuid => drivers[uuid]),
+    [d => d.address.state],
+    d => d
+)
+
+const rawPassengers = rawPeople.slice(Math.floor(rawPeople.length * driverRatio) + 1)
+const passengers = {}
+rawPassengers.forEach(
+    rawPassenger =>
+        (drivers[rawPassenger.login.uuid] = {
+            uuid: rawPassenger.login.uuid,
+            name: `${rawPassenger.name.first} ${rawPassenger.name.last}`,
+            email: rawPassenger.email,
+            pwd: rawPassenger.login.password,
+            address: {
+                state: rawPassenger.location.state,
+                city: rawPassenger.location.city,
+                street: rawPassenger.location.street
+            },
+            phone: rawPassenger.phone
+        })
+)
+const passengersStateBuckets = bucketGenerator(
+    Object.keys(passengers).map(uuid => passengers[uuid]),
+    [d => d.address.state],
+    d => d
+)
 
 const trips = []
 const tripCount = 100000
 for (let i = 0; i < tripCount; i++) {
-    // console.log(`trip ${i}`)
-    print(`generating trip ${i}`)
+    log(`generating trip ${i}`)
     const state = randomSample(states)
     const pickupCity = randomSample(cities)
     const destinationCity = randomSample(cities)
@@ -85,12 +128,16 @@ for (let i = 0; i < tripCount; i++) {
     const date = randomDateGenerator(new Date(2010, 1, 1))
 
     const driver = randomSample(driversStateBuckets[state])
+    const passenger = randomSample(driversStateBuckets[state])
 
-    const vehicle = {}
-    const passengers = {}
-    const payment = {}
+    const vehicle = driversVehicles[driver.uuid]
 
-    const rating = {}
+    const payment = {
+        method: randomSample(['credit', 'debit', 'cash']),
+        tip: randomSample([1, 2, 5])
+    }
+
+    const rating = Math.min(Math.floor(gaussianGenerator(4, 1)), 5)
 
     trips.push({
         pickupAddress,
@@ -99,13 +146,19 @@ for (let i = 0; i < tripCount; i++) {
         estimatedValue,
         finalValue,
         date,
-        driver
+        driver,
+        passenger,
+        vehicle,
+        payment,
+        rating
     })
 }
 
-// console.log('done')
-print('done')
+log('generation done')
 
 // MONGO ONLY
-db.createCollection('trips')
-db.trips.insert(trips)
+if (isMongo) {
+    db.createCollection('trips')
+    db.trips.insert(trips)
+    log('persistence done')
+}
