@@ -52,6 +52,20 @@ db.trips.aggregate([
     { $sort: { avgDistance: -1 } }
 ])
 
+// distancia max percorrida por motoristas por estado 
+db.trips.aggregate([
+    { $group: { _id: '$pickupAddress.state', maxDistance: { $max: '$distance' } } },
+    { $sort: { maxDistance: -1 } }
+])
+
+// primeiros 20 motoristas que possuem carros a partir de 2015
+
+db.trips.aggregate([
+    { $match: { 'vehicle.year': { $gte: 2015 } } },
+    { $group: { _id: { uuid: '$driver.uuid', carYear: '$vehicle.year' } } },
+    {$limit : 20} 
+])
+
 // contar viagens cuja a cidade do passageiro é igual a do motorista.
 db.trips.count({ $expr: { $eq: ['$driver.address.city', '$passenger.address.city'] } })
 
@@ -73,4 +87,3 @@ db.trips.aggregate([
     },
     { $sort: { count: -1 } }
 ])
-
