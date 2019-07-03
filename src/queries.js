@@ -4,6 +4,9 @@ db = db.getSiblingDB('carservice')
 // proporção de viagens cujo rating foi 5
 print(db.trips.count({ rating: 5 }) / db.trips.count())
 
+// listar passageiros das viagens com 12 ou mais quilometros de distância
+db.trips.find({ distance: { $gte: 12 } }, {'passenger.name': 1, 'distance': 1}).pretty()
+
 // listar os estados por maior quantidade de viagens feitas
 db.trips.aggregate([{ $group: { _id: '$pickupAddress.state', count: { $sum: 1 } } }, { $sort: { count: -1 } }])
 
@@ -45,6 +48,6 @@ db.trips.aggregate([
 
 // distancia média percorrida por motoristas por estado
 db.trips.aggregate([
-    { $group: { _id: '$pickupAddress.state', avgDistance: { $avg: '$distance' }}},
+    { $group: { _id: '$pickupAddress.state', avgDistance: { $avg: '$distance' } } },
     { $sort: { avgDistance: -1 } }
 ])
