@@ -1,0 +1,50 @@
+// use carservice
+db = db.getSiblingDB('carservice')
+
+// proporção de viagens cujo rating foi 5
+print(db.trips.count({ rating: 5 }) / db.trips.count())
+
+// listar os estados por maior quantidade de viagens feitas
+db.trips.aggregate([{ $group: { _id: '$pickupAddress.state', count: { $sum: 1 } } }, { $sort: { count: -1 } }])
+
+// listar motoristas e seus estados, ordenados pelo faturamento do motorista
+db.trips.aggregate([
+    {
+        $group: {
+            _id: { name: '$driver.name', state: '$driver.address.state', uuid: '$driver.uuid' },
+            total: { $sum: '$finalValue' }
+        }
+    },
+    { $sort: { total: -1 } }
+])
+
+// listar motoristas do estado de pernambuco apenas, ordenados pelo faturamento do motorista
+db.trips.aggregate([
+    { $match: { 'driver.address.state': 'pernambuco' } },
+    {
+        $group: {
+            _id: { name: '$driver.name', state: '$driver.address.state', uuid: '$driver.uuid' },
+            total: { $sum: '$finalValue' }
+        }
+    },
+    { $sort: { total: -1 } }
+])
+
+// motoristas que possuem carro a partir de 2018
+db.trips.aggregate([
+    { $match: { 'vehicle.year': { $gte: 2018 } } },
+    { $group: { _id: { uuid: '$driver.uuid', carYear: '$vehicle.year' } } }
+])
+
+// quantidade de viagens que os passageiros fizeram entre 2015 e 2017
+db.trips.aggregate([
+    { $match: { $and: [{ date: { $gte: new Date(2015, 1) } }, { date: { $lt: new Date(2019, 1, 1) } }] } },
+    { $group: { _id: { uuid: '$passenger.uuid', name: '$passenger.name' }, count: { $sum: 1 } } },
+    { $sort: { count: -1 } }
+])
+
+// distancia média percorrida por motoristas por estado
+db.trips.aggregate([
+    { $group: { _id: '$pickupAddress.state', avgDistance: { $avg: '$distance' }}},
+    { $sort: { avgDistance: -1 } }
+])
