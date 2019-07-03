@@ -58,6 +58,13 @@ db.trips.aggregate([
     { $sort: { maxDistance: -1 } }
 ])
 
+// primeiros 20 motoristas que possuem carros a partir de 2015
+
+db.trips.aggregate([
+    { $match: { 'vehicle.year': { $gte: 2015 } } },
+    { $group: { _id: { uuid: '$driver.uuid', carYear: '$vehicle.year' } } },
+    {$limit : 20} 
+])
 
 
 
