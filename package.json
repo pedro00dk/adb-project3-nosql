@@ -1,0 +1,17 @@
+{
+    "name": "car-service",
+    "version": "1.0.0",
+    "description": "",
+    "main": "index.js",
+    "author": "",
+    "license": "ISC",
+    "dependencies": {
+        "axios": "0.19.0"
+    },
+    "devDependencies": {},
+    "scripts": {
+        "mongo": "rm -rf ./data/ && mkdir ./data/ && mongod --dbpath \"$(pwd)/data/\"",
+        "fetch-people": "node ./src/population/people.js",
+        "populate": "mongo ./src/population/population.js"
+    }
+}
