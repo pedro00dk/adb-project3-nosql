@@ -51,3 +51,14 @@ db.trips.aggregate([
     { $group: { _id: '$pickupAddress.state', avgDistance: { $avg: '$distance' } } },
     { $sort: { avgDistance: -1 } }
 ])
+
+// distancia max percorrida por motoristas por estado 
+db.trips.aggregate([
+    { $group: { _id: '$pickupAddress.state', maxDistance: { $max: '$distance' } } },
+    { $sort: { maxDistance: -1 } }
+])
+
+
+
+
+
