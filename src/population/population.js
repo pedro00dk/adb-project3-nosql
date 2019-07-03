@@ -158,6 +158,11 @@ log('generation done')
 
 // MONGO ONLY
 if (isMongo) {
+
+    // use carservice
+    const carServiceDB = db.getSiblingDB('carservice')
+    db = carServiceDB
+    
     db.createCollection('trips')
     db.trips.insert(trips)
     log('persistence done')
