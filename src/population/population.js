@@ -65,29 +65,29 @@ const streets = [...new Set(rawPeople.map(p => p.location.street))]
 const driverRatio = 0.05
 const rawDrivers = rawPeople.slice(0, Math.floor(rawPeople.length * driverRatio))
 const drivers = {}
-rawDrivers.forEach(
-    rawDriver =>
-        (drivers[rawDriver.login.uuid] = {
-            uuid: rawDriver.login.uuid,
-            name: `${rawDriver.name.first} ${rawDriver.name.last}`,
-            email: rawDriver.email,
-            pwd: rawDriver.login.password,
-            address: {
-                state: rawDriver.location.state,
-                city: rawDriver.location.city,
-                street: rawDriver.location.street
-            },
-            phone: Math.random() < 0.5 ? [rawDriver.phone, rawDriver.cell] : [rawDriver.phone],
-            cnh: {
-                number: randomCnh(),
-                expire: randomDateGenerator(
-                    new Date(new Date().getFullYear() + 1, 1),
-                    new Date(new Date().getFullYear() + 5, 12)
-                ),
-                type: randomSample(['ab', 'b', 'c', 'd'])
-            }
-        })
-)
+rawDrivers.forEach((rawDriver, i) => {
+    log('creating driver', i)
+    drivers[rawDriver.login.uuid] = {
+        uuid: rawDriver.login.uuid,
+        name: `${rawDriver.name.first} ${rawDriver.name.last}`,
+        email: rawDriver.email,
+        pwd: rawDriver.login.password,
+        address: {
+            state: rawDriver.location.state,
+            city: rawDriver.location.city,
+            street: rawDriver.location.street
+        },
+        phone: Math.random() < 0.5 ? [rawDriver.phone, rawDriver.cell] : [rawDriver.phone],
+        cnh: {
+            number: randomCnh(),
+            expire: randomDateGenerator(
+                new Date(new Date().getFullYear() + 1, 1),
+                new Date(new Date().getFullYear() + 5, 12)
+            ),
+            type: randomSample(['ab', 'b', 'c', 'd'])
+        }
+    }
+})
 const driversVehicles = {}
 rawDrivers.forEach(rawDriver => (driversVehicles[rawDriver.login.uuid] = randomVehicle()))
 const driversStateBuckets = bucketGenerator(
@@ -98,29 +98,44 @@ const driversStateBuckets = bucketGenerator(
 
 const rawPassengers = rawPeople.slice(Math.floor(rawPeople.length * driverRatio) + 1)
 const passengers = {}
-rawPassengers.forEach(
-    rawPassenger =>
-        (passengers[rawPassenger.login.uuid] = {
-            uuid: rawPassenger.login.uuid,
-            name: `${rawPassenger.name.first} ${rawPassenger.name.last}`,
-            email: rawPassenger.email,
-            pwd: rawPassenger.login.password,
-            address: {
-                state: rawPassenger.location.state,
-                city: rawPassenger.location.city,
-                street: rawPassenger.location.street
-            },
-            phone: Math.random() < 0.5 ? [rawPassenger.phone, rawPassenger.cell] : [rawPassenger.phone]
-        })
-)
+rawPassengers.forEach((rawPassenger, i) => {
+    log('creating passenger', i)
+    passengers[rawPassenger.login.uuid] = {
+        uuid: rawPassenger.login.uuid,
+        name: `${rawPassenger.name.first} ${rawPassenger.name.last}`,
+        email: rawPassenger.email,
+        pwd: rawPassenger.login.password,
+        address: {
+            state: rawPassenger.location.state,
+            city: rawPassenger.location.city,
+            street: rawPassenger.location.street
+        },
+        phone: Math.random() < 0.5 ? [rawPassenger.phone, rawPassenger.cell] : [rawPassenger.phone]
+    }
+})
 const passengersStateBuckets = bucketGenerator(
     Object.keys(passengers).map(uuid => passengers[uuid]),
     [d => d.address.state],
     d => d
 )
 
+if (isMongo) {
+    // use carservice
+    const carServiceDB = db.getSiblingDB('carservice')
+    db = carServiceDB
+
+    db.createCollection('people')
+    const driversList = Object.keys(drivers).map(uuid => drivers[uuid])
+    db.people.insert(driversList)
+    const passengersList = Object.keys(passengers).map(uuid => passengers[uuid])
+    db.people.insert(passengersList)
+    log('people persistence done')
+}
+
+
+
 const trips = []
-const tripCount = 100000
+const tripCount = 10000
 for (let i = 0; i < tripCount; i++) {
     log(`generating trip ${i}`)
     const state = gaussianRandomSample(states)
