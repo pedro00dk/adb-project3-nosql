@@ -5,7 +5,7 @@ db = db.getSiblingDB('carservice')
 print(db.trips.count({ rating: 5 }) / db.trips.count())
 
 // listar ids dos passageiros das viagens com 12 ou mais quilometros de distância
-db.trips.find({ distance: { $gte: 12 } }, { 'passenger': 1, distance: 1 }).pretty()
+db.trips.find({ distance: { $gte: 12 } }, { passenger: 1, distance: 1 }).pretty()
 
 // listar os estados por maior quantidade de viagens feitas
 db.trips.aggregate([{ $group: { _id: '$pickupAddress.state', count: { $sum: 1 } } }, { $sort: { count: -1 } }])
@@ -148,3 +148,9 @@ db.trips.aggregate([
     { $sort: { sum: -1 } },
     { $limit: 5 }
 ])
+
+//// Criação de índice de texto
+db.people.createIndex({ name: 'text', email: 'text' })
+
+// Consulta por nomes de motoristas com o sobrenome moura
+db.people.find({ $text: { $search: 'moura' }, cnh: { $exists: true } }).pretty()
