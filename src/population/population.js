@@ -170,8 +170,8 @@ for (let i = 0; i < tripCount; i++) {
     const pickupAddress = { state, city: pickupCity, street: pickupStreet }
     const destinationAddress = { state, city: destinationCity, street: destinationStreet }
     const distance = gaussianGenerator(8, 2)
-    const estimatedValue = Math.min(6, 2 + distance * 1.5)
-    const finalValue = Math.min(6, estimatedValue * (Math.random() * 0.4 + 0.8))
+    const estimatedValue = Math.max(6, 2 + distance * 1.5)
+    const finalValue = Math.max(6, estimatedValue * (Math.random() * 0.4 + 0.8))
     const date = randomDateGenerator(new Date(2010, 1, 1))
 
     let driver = gaussianRandomSample(isMongo ? driversIdsStateBuckets[state] : driversStateBuckets[state])
