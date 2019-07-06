@@ -87,3 +87,44 @@ db.trips.aggregate([
     },
     { $sort: { count: -1 } }
 ])
+
+// Passageiro por estado com a maior distancia percorrida
+db.trips.mapReduce(
+    function() {
+        emit(this.pickupAddress.state, { name: this.passenger.name, dist: this.distance })
+    },
+    function(state, values) {
+        return values.reduce(
+            (acc, next) => ({ name: next.dist > acc.dist ? next.name : acc.name, dist: Math.max(acc.dist, next.dist) }),
+            { name: null, dist: 0 }
+        )
+    },
+    { out: 'res' }
+)
+
+// Listar a nota média dos motoristas do maranhão
+db.trips.aggregate([
+    { $match: { 'driver.address.state': 'maranhão' } },
+    { $group: { _id: { cnh: '$driver.cnh.number', nome: '$driver.name' }, avgRating: { $avg: '$rating' } } }
+])
+
+// Os 5 passageiros que gastaram mais em corridas nos estados do sul entre 01/09/14 e 03/04/18 ordenador por custo
+db.trips.aggregate([
+    {
+        $match: {
+            $and: [
+                {
+                    $or: [
+                        { 'driver.address.state': 'santa catarina' },
+                        { 'driver.address.state': 'parana' },
+                        { 'driver.address.state': 'rio grande do sul' }
+                    ]
+                },
+                { $and: [{ date: { $gte: new Date(2014, 9, 1) } }, { date: { $lte: new Date(2018, 4, 3) } }] }
+            ]
+        }
+    },
+    { $group: { _id: { id: '$passenger.uuid', name: '$passenger.name' }, sum: { $sum: '$finalValue' } } },
+    { $sort: { sum: -1 } },
+    { $limit: 5 }
+])
