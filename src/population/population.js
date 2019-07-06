@@ -42,6 +42,11 @@ function gaussianRandomSample(samples, mean, std) {
     return samples[Math.max(0, Math.min(samples.length - 1, Math.round(gaussianGenerator(mean, std))))]
 }
 
+const randomCpfs = [...new Array(10000)].map(() => Math.floor(10000000000 + Math.random() * 99999999999))
+function randomCpf() {
+    return randomCpfs.pop()
+}
+
 const randomCnhs = [...new Array(10000)].map(() => Math.floor(10000000000 + Math.random() * 90000000000))
 function randomCnh() {
     return randomCnhs.pop()
@@ -67,8 +72,9 @@ const rawDrivers = rawPeople.slice(0, Math.floor(rawPeople.length * driverRatio)
 const drivers = {}
 rawDrivers.forEach((rawDriver, i) => {
     log('creating driver', i)
-    drivers[rawDriver.login.uuid] = {
-        uuid: rawDriver.login.uuid,
+    const cpf = randomCpf()
+    drivers[cpf] = {
+        cpf,
         name: `${rawDriver.name.first} ${rawDriver.name.last}`,
         email: rawDriver.email,
         pwd: rawDriver.login.password,
@@ -89,9 +95,9 @@ rawDrivers.forEach((rawDriver, i) => {
     }
 })
 const driversVehicles = {}
-rawDrivers.forEach(rawDriver => (driversVehicles[rawDriver.login.uuid] = randomVehicle()))
+Object.keys(drivers).forEach(cpf => (driversVehicles[cpf] = randomVehicle()))
 const driversStateBuckets = bucketGenerator(
-    Object.keys(drivers).map(uuid => drivers[uuid]),
+    Object.keys(drivers).map(cpf => drivers[cpf]),
     [d => d.address.state],
     d => d
 )
@@ -100,8 +106,9 @@ const rawPassengers = rawPeople.slice(Math.floor(rawPeople.length * driverRatio)
 const passengers = {}
 rawPassengers.forEach((rawPassenger, i) => {
     log('creating passenger', i)
-    passengers[rawPassenger.login.uuid] = {
-        uuid: rawPassenger.login.uuid,
+    const cpf = randomCpf()
+    passengers[cpf] = {
+        cpf,
         name: `${rawPassenger.name.first} ${rawPassenger.name.last}`,
         email: rawPassenger.email,
         pwd: rawPassenger.login.password,
@@ -114,7 +121,7 @@ rawPassengers.forEach((rawPassenger, i) => {
     }
 })
 const passengersStateBuckets = bucketGenerator(
-    Object.keys(passengers).map(uuid => passengers[uuid]),
+    Object.keys(passengers).map(cpf => passengers[cpf]),
     [d => d.address.state],
     d => d
 )
@@ -125,17 +132,33 @@ if (isMongo) {
     db = carServiceDB
 
     db.createCollection('people')
-    const driversList = Object.keys(drivers).map(uuid => drivers[uuid])
+    const driversList = Object.keys(drivers).map(cpf => drivers[cpf])
     db.people.insert(driversList)
-    const passengersList = Object.keys(passengers).map(uuid => passengers[uuid])
+    const passengersList = Object.keys(passengers).map(cpf => passengers[cpf])
     db.people.insert(passengersList)
     log('people persistence done')
 }
 
+const driversIdsStateBuckets = {}
+const passengersIdsStateBuckets = {}
+if (isMongo) {
+    states.forEach(state => {
+        driversIdsStateBuckets[state] = db.people
+            .find({ 'address.state': state, cnh: { $exists: true } })
+            .map(p => p._id)
+    })
+    states.forEach(state => {
+        passengersIdsStateBuckets[state] = db.people
+            .find({ 'address.state': state, cnh: { $exists: false } })
+            .map(p => p._id)
+    })
+}
 
+const driversIdsVehicles = {}
+if (isMongo) db.people.find({ cnh: { $exists: true } }).forEach(p => (driversIdsVehicles[p._id] = driversVehicles[p.cpf]))
 
 const trips = []
-const tripCount = 10000
+const tripCount = 100000
 for (let i = 0; i < tripCount; i++) {
     log(`generating trip ${i}`)
     const state = gaussianRandomSample(states)
@@ -151,10 +174,10 @@ for (let i = 0; i < tripCount; i++) {
     const finalValue = Math.min(6, estimatedValue * (Math.random() * 0.4 + 0.8))
     const date = randomDateGenerator(new Date(2010, 1, 1))
 
-    const driver = gaussianRandomSample(driversStateBuckets[state])
-    const passenger = gaussianRandomSample(passengersStateBuckets[state])
+    let driver = gaussianRandomSample(isMongo ? driversIdsStateBuckets[state] : driversStateBuckets[state])
+    let passenger = gaussianRandomSample(isMongo ? passengersIdsStateBuckets[state] : passengersStateBuckets[state])
 
-    const vehicle = driversVehicles[driver.uuid]
+    const vehicle = isMongo ? driversIdsVehicles[driver]: driversVehicles[driver.cpf]
 
     const payment = {
         method: randomSample(['credit', 'debit', 'cash']),
