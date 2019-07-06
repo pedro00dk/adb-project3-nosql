@@ -119,6 +119,8 @@ db.trips.mapReduce(
     },
     { out: 'res' }
 )
+// renomeando nome ruim da coleção
+db.res.renameCollection('highestPassengerDistance')
 
 // Listar a nota média dos motoristas do maranhão
 db.trips.aggregate([
