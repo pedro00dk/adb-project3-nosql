@@ -6,6 +6,8 @@ print(db.trips.count({ rating: 5 }) / db.trips.count())
 
 // listar ids dos passageiros das viagens com 12 ou mais quilometros de distância
 db.trips.find({ distance: { $gte: 12 } }, { passenger: 1, distance: 1 }).pretty()
+// same query with $where
+db.trips.find({ $where: function() {return this.distance >= 12} }, { passenger: 1, distance: 1 }).pretty()
 
 // listar os estados por maior quantidade de viagens feitas
 db.trips.aggregate([{ $group: { _id: '$pickupAddress.state', count: { $sum: 1 } } }, { $sort: { count: -1 } }])
