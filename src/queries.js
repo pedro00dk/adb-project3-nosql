@@ -7,7 +7,16 @@ print(db.trips.count({ rating: 5 }) / db.trips.count())
 // listar ids dos passageiros das viagens com 12 ou mais quilometros de distância
 db.trips.find({ distance: { $gte: 12 } }, { passenger: 1, distance: 1 }).pretty()
 // same query with $where
-db.trips.find({ $where: function() {return this.distance >= 12} }, { passenger: 1, distance: 1 }).pretty()
+db.trips
+    .find(
+        {
+            $where: function() {
+                return this.distance >= 12
+            }
+        },
+        { passenger: 1, distance: 1 }
+    )
+    .pretty()
 
 // listar os estados por maior quantidade de viagens feitas
 db.trips.aggregate([{ $group: { _id: '$pickupAddress.state', count: { $sum: 1 } } }, { $sort: { count: -1 } }])
@@ -148,13 +157,22 @@ db.trips.aggregate([
     },
     { $lookup: { from: 'people', localField: 'passenger', foreignField: '_id', as: 'passenger' } },
     { $unwind: '$passenger' },
-    { $group: { _id: { id: '$passenger.uuid', name: '$passenger.name' }, sum: { $sum: '$finalValue' } } },
+    { $group: { _id: { cpf: '$passenger.cpf', name: '$passenger.name' }, sum: { $sum: '$finalValue' } } },
     { $sort: { sum: -1 } },
     { $limit: 5 }
 ])
 
+// Os 1/5 passageiros que gastaram menos em corridas
+db.trips.aggregate([
+    { $lookup: { from: 'people', localField: 'passenger', foreignField: '_id', as: 'passenger' } },
+    { $unwind: '$passenger' },
+    { $group: { _id: { cpf: '$passenger.cpf', name: '$passenger.name' }, sum: { $sum: '$finalValue' } } },
+    { $sort: { sum: -1 } },
+    { $skip: db.people.count({ cnh: { $exists: false } }) * (4 / 5) }
+])
+
 // Listar ids dos motoristas com apenas um telefone cadastrado
-db.people.find({cnh: { $exists: true }, phone: {$size: 1}})
+db.people.find({ cnh: { $exists: true }, phone: { $size: 1 } })
 
 //// Criação de índice de texto
 db.people.createIndex({ name: 'text', email: 'text' })
