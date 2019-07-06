@@ -151,6 +151,9 @@ db.trips.aggregate([
     { $limit: 5 }
 ])
 
+// Listar ids dos motoristas com apenas um telefone cadastrado
+db.people.find({cnh: { $exists: true }, phone: {$size: 1}})
+
 //// Criação de índice de texto
 db.people.createIndex({ name: 'text', email: 'text' })
 
