@@ -179,3 +179,25 @@ db.people.createIndex({ name: 'text', email: 'text' })
 
 // Consulta por nomes de motoristas com o sobrenome moura
 db.people.find({ $text: { $search: 'moura' }, cnh: { $exists: true } }).pretty()
+
+
+// #SET : atualizando o nome do estado "santa catarina" pra "santa caratina - SC" APENAS para a
+// primeira pessoa que se encaixe na condição
+db.people.update(
+    {"address.state" : "santa catarina"},
+    {
+        $set :{
+        "address.state" : "santa catarina - SC"
+    }
+    }
+)
+
+// #PUSH : adicionando mais um telefone a um determinado usuário
+db.people.update(
+    {"_id" : ObjectId("5d21ca0cbb08843b1bfd2b6b")},
+    {
+        $push :{
+        "phone" : "(82) 3333-3333"
+    }
+    }
+)
