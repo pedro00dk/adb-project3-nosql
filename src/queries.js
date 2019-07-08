@@ -244,3 +244,21 @@ db.people.update(
     }
     }
 )
+
+// #EACH vários updates em sequência
+db.people.update(
+    {"_id" : ObjectId("5d21ca0cbb08843b1bfd2b6b")},
+    {
+        $push :{
+        phone : {$each : ["(82) 4444-4444", "(82) 4444-2222"]}
+    }
+    }
+)
+
+// #FINDONE : encontrando algum (e apenas um) elemento da coleção trips que tenha o rating maior que 4
+db.trips.findOne(
+    {
+        rating: {$gt: 4}
+    }
+)
+
