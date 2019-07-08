@@ -286,5 +286,7 @@ db.trips.aggregate([
            { $project: { Passengers:{ $concat: [ "$passenger.name", " - ", "$passenger.email" ] } } }
 ])
 
+// $ALL: Retornar todas as viagens realizadas por veículos que são do ano 2018
+db.trips.find({"vehicle.year":{ $all:[2018]}}).pretty()
 
 
