@@ -289,4 +289,26 @@ db.trips.aggregate([
 // $ALL: Retornar todas as viagens realizadas por veículos que são do ano 2018
 db.trips.find({"vehicle.year":{ $all:[2018]}}).pretty()
 
+// SETINTERSECTION 
+db.people.aggregate(
+    [
+      { $project: { name:1, phone: 1, phone:1, Phones: { $setIntersection: [ "$phone", "$phone"] }, _id: 0 } }
+    ]
+ )
+
+// SETISSUBSET
+db.people.aggregate(
+    [
+      { $project:{name:1, phone: 1, phone:1, Phones: { $setIsSubset: [ "$phone", "$phone"] }, _id:0 } }
+    ]
+ )
+
+//SETUNION
+db.people.aggregate(
+   [
+     { $project: { phone:1, phone:1, Phones: { $setUnion: [ "$phone", "$phone" ] }, _id: 0 } }
+   ]
+)
+
+
 
