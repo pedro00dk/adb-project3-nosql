@@ -279,5 +279,12 @@ db.trips.aggregate([
 { $project: { _id: { name: { $toUpper: "$passenger.name"} } } }
  ])
 
+// $CONCAT: Nome dos passageiros e seus respectivos emails 
+db.trips.aggregate([
+    { $lookup: { from: 'people', localField: 'passenger', foreignField: '_id', as: 'passenger' } },
+    { $unwind: '$passenger'},
+           { $project: { Passengers:{ $concat: [ "$passenger.name", " - ", "$passenger.email" ] } } }
+])
+
 
 
