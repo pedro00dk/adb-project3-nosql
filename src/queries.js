@@ -262,3 +262,22 @@ db.trips.findOne(
     }
 )
 
+//$SUBSTR: Quebrar o primeiro nome dos motoristas em uma substring
+db.trips.aggregate([ 
+{ $lookup: {from: 'people', localField: 'driver', foreignField: '_id', as:'driver'} },
+{$unwind: '$driver'},
+    { $project: { _id: {name: '$driver.name'},
+           "subString": { $substrBytes:["$driver.name", 0, 4 ]}
+     }
+        }
+ ])
+
+// $TOUPPER: Retornar o nome dos passageiros em letras maiúsculas
+db.trips.aggregate([ 
+{ $lookup: { from: 'people', localField: 'passenger', foreignField: '_id', as: 'passenger' } },
+{ $unwind: '$passenger'},
+{ $project: { _id: { name: { $toUpper: "$passenger.name"} } } }
+ ])
+
+
+
