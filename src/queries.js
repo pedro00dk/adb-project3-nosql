@@ -310,5 +310,22 @@ db.people.aggregate(
    ]
 )
 
+//#OUT: gerando uma nova coleção com o cpf e email das pessoas
+db.people.aggregate(
+     [
+       {$group: { _id: "$cpf", email: {$push: "$email"}}},
+       {$out: "emailpeople"}
+    ]
+)
+
+//#MULTIPLY: consulta para estimar a taxa de duração de tempo de viagem em relação ao valor final
+db.trips.aggregate(
+    [
+      {$project: { _id: 1, inicioCorrida: "$date", valorDistancia: {$multiply: ["$distance", 1.5]}, 
+      valorTempo: {$subtract: ["$finalValue", {$multiply: ["$distance", 1.5]}]}
+    }
+    }
+   ]
+)
 
 
