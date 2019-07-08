@@ -181,6 +181,49 @@ db.people.createIndex({ name: 'text', email: 'text' })
 db.people.find({ $text: { $search: 'moura' }, cnh: { $exists: true } }).pretty()
 
 
+// Retornar o total de documentos da base de dados carservice
+
+db.trips.find().count()
+
+// retornar as viagens com a distância maior que 4
+db.trips.find( {distance: { $gte: 4 } } )
+
+// listar motoristas do estado do rio grande do sul apenas, ordenados pela distancia percorrida do motorista
+db.trips.aggregate([
+    { $match: { 'driver.address.state': 'rio grande do sul' } },
+    {
+        $group: {
+            _id: { name: '$driver.name', state: '$driver.address.state', uuid: '$driver.uuid' },
+            distanciaTotal: { $sum: '$distance' }
+        }
+    },
+    { $sort: { distanciaTotal: -1 } }
+])
+
+// listar motoristas e seus estados, ordenados pela distancia percorrida 
+
+db.trips.aggregate([
+{ $lookup: {from: 'people', localField: 'driver', foreignField: '_id', as:'driver'} },
+{$unwind: '$driver'},
+{
+    $group:{
+        _id:{cpf: '$driver.cpf', name: '$driver.name', state: '$driver.address.state'},
+        distanciaTotal:{ $sum: '$distance'}
+    }
+},
+    {$sort: { distanciaTotal: -1 } }                         
+
+])
+
+// Retornar as viagens que aconteceram depois do dia 01-04-2015
+db.trips.find( {
+    date: { $gt: new Date('2015-04-01') },
+ } ).pretty()
+
+// Quantas viagens foram realizadas no dia 2023-10-03  
+db.trips.find({date: new Date('2023-10-03')}).count()
+
+
 // #SET : atualizando o nome do estado "santa catarina" pra "santa caratina - SC" APENAS para a
 // primeira pessoa que se encaixe na condição
 db.people.update(
