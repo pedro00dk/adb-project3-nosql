@@ -328,4 +328,33 @@ db.trips.aggregate(
    ]
 )
 
+//$STRCASECMP:  Para realizar uma comparação insensível  dos nomes dos passageiros com a cadeia "aeiou"
+
+db.trips.aggregate([
+    { $lookup: { from: 'people', localField: 'passenger', foreignField: '_id', as: 'passenger' } },
+    { $unwind: '$passenger'},
+    {$project:
+           {  _id: { name:  "$passenger.name"},
+            Result: { $strcasecmp: [ "$passenger.name", "azw12" ] }
+           }
+       }
+    ]
+ )
+
+
+
+// FIRST: Retorna a primeira viagem realizar por _ID
+   
+ db.trips.aggregate([
+      { $sort: { _id: 1, date: 1 } },
+      {
+        $group:
+        {
+            _id: "$_id", 
+            firstTripsDate:{ $first: "$date"},
+          }
+      }
+    ])
+
+
 
