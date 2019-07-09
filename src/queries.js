@@ -34,6 +34,25 @@ db.trips.aggregate([
     { $sort: { total: -1 } }
 ])
 
+// ordenar os estados pela nota médias das viagens - limitar a 5
+db.trips.aggregate(
+    [
+        {
+            $group: { 
+                _id: {asdf: '$pickupAddress.state'}, avg: {$avg: '$rating' }
+            }
+        },
+        {
+            $sort: {
+                avg: -1
+            }
+        },
+        {
+            $limit: 5
+        }
+    ]
+)
+
 // listar motoristas do estado de pernambuco apenas, ordenados pelo faturamento do motorista
 db.trips.aggregate([
     { $lookup: { from: 'people', localField: 'driver', foreignField: '_id', as: 'driver' } },
