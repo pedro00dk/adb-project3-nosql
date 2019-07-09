@@ -356,5 +356,24 @@ db.trips.aggregate([
       }
     ])
 
+// SAMPLE: seleciona aleatoriamente 3 documentos da coleção trips 
 
+db.trips.aggregate(
+    [ { $sample: { size: 3 } } ]).pretty()
+
+    //seleciona aleatoriamente 3 documentos da coleção trips 
+
+ db.people.aggregate(
+        [ { $sample: { size: 3 } } ]).pretty()
+
+    
+// SORTBYCOUNT: retorna a contagem  do número de documentos associado a distance 
+db.trips.aggregate([
+    {$unwind:"$distance"},{$sortByCount:"$distance"}
+])
+
+// Retorna o total de veículos por ano 
+db.trips.aggregate([
+    {$unwind:"$vehicle.year"},{$sortByCount:"$vehicle.year"}
+])
 
