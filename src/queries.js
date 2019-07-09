@@ -318,6 +318,23 @@ db.people.aggregate(
     ]
 )
 
+// #FILTER: depende da execução da operação anterior
+db.emailpeople.aggregate(
+    {
+        $project:
+        {
+            emails: {
+                $filter:
+                {
+                    input: "$email",
+                    as: "email",
+                    cond: {$eq: ["$$email", "lauriete.mendes@example.com"]}
+                }
+            }
+        }
+    }
+)
+
 //#MULTIPLY: consulta para estimar a taxa de duração de tempo de viagem em relação ao valor final
 db.trips.aggregate(
     [
