@@ -377,3 +377,19 @@ db.trips.aggregate([
     {$unwind:"$vehicle.year"},{$sortByCount:"$vehicle.year"}
 ])
 
+// ADDTOSET: retorna os documentos por dia e ano conforme cada distancia percorrida
+ db.trips.aggregate(
+    [
+      {
+        $group:
+          {
+            _id: { day: { $dayOfYear: "$date"}, year: { $year: "$date" } },
+            Result: { $addToSet: "$distance" }
+          }
+      }
+    ]
+ )
+
+
+
+
