@@ -53,6 +53,26 @@ db.trips.aggregate(
     ]
 )
 
+//corrida mais longa por estado cujo o valor final foi menor que o valor estimado
+
+db.trips.aggregate(
+    [
+        {
+        $match: {
+            $expr: {  $gt: ['$estimatedValue', '$finalValue'] }
+
+            }
+      },
+        {
+            
+            $group: { 
+                _id: '$pickupAddress.state', distance: {$max: '$distance'}
+            }
+        }
+        
+    ] 
+)
+
 // listar motoristas do estado de pernambuco apenas, ordenados pelo faturamento do motorista
 db.trips.aggregate([
     { $lookup: { from: 'people', localField: 'driver', foreignField: '_id', as: 'driver' } },
